@@ -24,19 +24,13 @@ def init_ortho():
     glMatrixMode(GL_PROJECTION) # Set camera to Projection mode
     glLoadIdentity() # clean everything done before
     # gluOrtho2D(-250, 250, -200, 200) # for the 2 dots with plot_graph
-    gluOrtho2D(0, 4, -1, 1) # Setting window coordinates
+    gluOrtho2D(0, 50, 0, 40) # Setting window coordinates
 
     # LEFT, RIGHT, BOTTOM, TOP
 
 def plot_graph():
     glBegin(GL_POINTS)
-    px : GL_DOUBLE
-    py : GL_DOUBLE
-    for px in np.arange(0, 4, 0.005):
-        py = math.exp(-px) * math.cos(2 * math.pi * px)
-        glVertex2f(px, py)
-
-    # glVertex2f(0, 0)
+    glVertex2f(0, 0)
     glEnd()
 
 done = False
@@ -57,11 +51,14 @@ while not done:
 
     plot_graph()
 
-    glPointSize(1) # set point size to 5
+    glPointSize(5) # set point size to 5
 
     # [!] WHAT YOU WANT TO DRAW, PUT IT BETWEEN glBegin and glEnd
     glBegin(GL_POINTS)
-    glVertex2i(25, 20) # POSITION OF THE WHITE DOT!
+    glVertex2i(25, 20)
+    glVertex2i(25, 10)
+    glVertex2i(15, 20)
+
     glEnd()
 
     pygame.display.flip() #  put the content which was drawn in the buffer to the display
