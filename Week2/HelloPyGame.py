@@ -5,11 +5,11 @@ from pygame.locals import * # key pressing, key capture, etc
 # INITIAL FILE, BEFORE UPDATED IN HelloOpenGL.py
 pygame.init()
 
-screen_width = 1000
-screen_height = 800
+screen_width = 500
+screen_height = 400
 
 #Display the screen
-screen = pygame.display.set_mode((screen_width, screen_width), DOUBLEBUF | OPENGL)
+screen = pygame.display.set_mode((screen_width, screen_height), DOUBLEBUF | OPENGL)
 # DOUBLEBUF is important!
 
 pygame.display.set_caption('OpenGL in Python :3')
