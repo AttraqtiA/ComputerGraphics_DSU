@@ -16,7 +16,7 @@ background_color = (0, 0, 0, 1)
 drawing_color = (1, 1, 1, 1)
 
 screen = pygame.display.set_mode((screen_width, screen_height), DOUBLEBUF | OPENGL)
-pygame.display.set_caption('Transformations in Python')
+pygame.display.set_caption('(Teapot) Transformations in Python')
 cube = Cube(GL_LINE_LOOP)
 mesh = LoadMesh("teapot.obj", GL_LINE_LOOP)
 camera = Camera()
@@ -37,7 +37,7 @@ def camera_init():
 
     glViewport(0, 0, screen.get_width(), screen.get_height())
     glEnable(GL_DEPTH_TEST)
-    camera.update()
+    camera.update(screen.get_width(), screen.get_height()) # For the mouse to stay in the center
 
 
 def display():
@@ -51,10 +51,22 @@ def display():
 
 done = False
 initialise()
+
+# Grab the mouse inside window, hide cursor too
+pygame.event.set_grab(True)
+pygame.mouse.set_visible(False)
+
 while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
+        if event.type == KEYDOWN:
+            if event.key == K_ESCAPE:
+                pygame.mouse.set_visible(True)
+                pygame.event.set_grab(False)
+            if event.key == K_SPACE:
+                pygame.mouse.set_visible(False)
+                pygame.event.set_grab(True)
 
     display()
     pygame.display.flip()
