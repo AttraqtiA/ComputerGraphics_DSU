@@ -23,6 +23,35 @@ cube = Cube(GL_LINE_LOOP)
 mesh = LoadMesh("cube.obj", GL_LINE_LOOP)
 camera = Camera()
 
+def Light():
+    ambientLight = [0.25, 0.25, 0.0, 1.0]
+    diffuseLight = [0.9, 0.9, 0.0, 1.0]
+    lightPos = [-100.0, 130.0, 150.0, 1.0]
+    specular = [1.0, 1.0, 1.0, 1.0]
+    specref = [1.0, 1.0, 1.0, 1.0]
+
+    glShadeModel(GL_SMOOTH)
+    glClearColor(0.0, 0.0, 0.0, 1.0)
+    glClearDepth(1.0)
+    glEnable(GL_DEPTH_TEST)
+    glEnable(GL_CULL_FACE)
+    glFrontFace(GL_CCW)
+    glEnable(GL_LIGHTING)
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight)
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight)
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPos)
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specular)
+    glEnable(GL_LIGHT0)
+
+    glEnable(GL_COLOR_MATERIAL)
+    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE)
+    glMaterialfv(GL_FRONT, GL_SPECULAR, specref)
+    glMateriali(GL_FRONT, GL_SHININESS, 10)
+    glDepthFunc(GL_LEQUAL)
+    #
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
+
 def initialise():
     glClearColor(background_color[0], background_color[1], background_color[2], background_color[3])
     glColor(drawing_color)
@@ -31,6 +60,8 @@ def initialise():
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     gluPerspective(60, (screen_width / screen_height), 0.1, 500.0)
+
+    Light() # Implement the light function!
 
 def camera_init():
     # modelview
