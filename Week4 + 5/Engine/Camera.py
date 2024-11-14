@@ -4,7 +4,7 @@ from math import *
 
 class Camera:
     def __init__(self):
-        self.eye = pygame.math.Vector3(0, 0, 0)
+        self.eye = pygame.math.Vector3(0, 0, 3)
         self.up = pygame.math.Vector3(0, 1, 0)
         self.right = pygame.math.Vector3(1, 0, 0) # direction to camera's right
         self.forward = pygame.math.Vector3(0, 0, 1) # camera's looking direction
@@ -14,6 +14,8 @@ class Camera:
         self.last_mouse = pygame.math.Vector2(0, 0)
         self.mouse_sensitivityX = 0.1
         self.mouse_sensitivityY = 0.1
+        self.key_sensitivity = 0.008
+        # This will slow down the response to the key press
 
     def rotate(self, yaw, pitch):
         self.yaw += yaw
@@ -47,13 +49,13 @@ class Camera:
         # Arrow keys
         keys = pygame.key.get_pressed()
         if keys[pygame.K_DOWN]:
-            self.eye -= self.forward
+            self.eye -= self.forward * self.key_sensitivity
         if keys[pygame.K_UP]:
-            self.eye += self.forward
+            self.eye += self.forward * self.key_sensitivity
         if keys[pygame.K_RIGHT]:
-            self.eye += self.right
+            self.eye += self.right * self.key_sensitivity
         if keys[pygame.K_LEFT]:
-            self.eye -= self.right
+            self.eye -= self.right * self.key_sensitivity
 
         # Update camera position AFTER the eye has moved
         self.look = self.eye + self.forward
