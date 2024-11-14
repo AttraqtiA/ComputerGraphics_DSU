@@ -43,8 +43,8 @@ class Camera:
         pygame.mouse.set_pos(w/2, h/2)
         self.last_mouse = pygame.mouse.get_pos() # yeah, double code, napa gk ambil mouse_pos aja, takutny gk keupdate dari set_pos
 
-        # Rotate around the object!
-        self.rotate(mouse_change.x * self.mouse_sensitivityX, mouse_change.y * self.mouse_sensitivityY)
+        # Rotate around the object! [I added '-' on mouse_change.x to invert/reverse it!
+        self.rotate(-mouse_change.x * self.mouse_sensitivityX, mouse_change.y * self.mouse_sensitivityY)
 
         # Arrow keys
         keys = pygame.key.get_pressed()

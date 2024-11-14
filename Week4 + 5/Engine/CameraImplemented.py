@@ -88,7 +88,7 @@ def display():
     draw_world_axes()
 
     t = time.time() - start_time
-    year_period = 10.0  #5 seconds for simulating 1 year
+    year_period = 10.0  # 5 seconds for simulating 1 year
     year = (t / year_period)
 
     # # Push dan Pop itu biar translationnya gak bocor ke cube lain, atau bisa juga diundo translationnya, cek pdf
@@ -124,17 +124,18 @@ def display():
     glTranslated(3, 0, 0)
     sphere_earth = gluNewQuadric()
     gluSphere(sphere_earth, 0.3, 10, 8)
-    glPopMatrix()
 
-    # # MOON system
-    # glPushMatrix()
-    # glRotatef(moon_sid * 360.0, 0.0, 1.0, 0.0)
-    # glTranslatef(1, 0, 0)
+    # MOON system
+    glPushMatrix()
+    glRotatef(moon_sid * 360.0, 0.0, 1.0, 0.0)
+    glTranslatef(1, 0, 0)
     # glRotatef(90, 1.0, 0, 0)
-    # glColor4f(0.4, 0.5, 0.6, 1)
-    # sphere_moon = gluNewQuadric()
-    # gluSphere(sphere_moon, 0.1, 10, 8)
-    # glPopMatrix()
+    glColor4f(0.4, 0.5, 0.6, 1)
+    sphere_moon = gluNewQuadric()
+    gluSphere(sphere_moon, 0.1, 10, 8)
+
+    glPopMatrix()
+    glPopMatrix() # close both
 
     # MARS system, rotation around the sun
     glPushMatrix()
@@ -144,6 +145,35 @@ def display():
     sphere_mars = gluNewQuadric()
     gluSphere(sphere_mars, 0.2, 10, 8)
     glPopMatrix()
+
+    # JUPITER system, rotating around the Sun
+    glPushMatrix()
+    glColor4f(1.0, 0.5, 0.0, 1)  # Orange color for Jupiter
+    glRotatef(year * 360.0 / 11.86, 0.0, 1.0, 0.0)  # Jupiter's orbit around the Sun (slower than Mars)
+    glTranslatef(6.5, 0, 0)  # Set distance of Jupiter from the Sun
+
+    sphere_jupiter = gluNewQuadric()
+    gluSphere(sphere_jupiter, 0.5, 15, 12)  # Jupiter sphere
+
+    # Io Moon system, rotating around Jupiter
+    glPushMatrix()  # Start Io transformation around Jupiter
+    glColor4f(1.0, 0.8, 0.0, 1)  # Yellow-orange color for Io
+    glRotatef(year * 360.0 * 12, 0.0, 1.0, 0.0)  # Io's fast orbit around Jupiter
+    glTranslatef(0.8, 0, 0)  # Distance of Io from Jupiter
+    sphere_io = gluNewQuadric()
+    gluSphere(sphere_io, 0.1, 10, 8)  # Io sphere
+    glPopMatrix()  # End Io transformation
+
+    # Europa Moon system, rotating around Jupiter
+    glPushMatrix()  # Start Europa transformation around Jupiter
+    glColor4f(0.8, 0.8, 1.0, 1)  # Pale blue color for Europa
+    glRotatef(year * 360.0 * 4, 0.0, 1.0, 0.0)  # Europa's slower orbit around Jupiter
+    glTranslatef(1.5, 0, 0)  # Distance of Europa from Jupiter
+    sphere_europa = gluNewQuadric()
+    gluSphere(sphere_europa, 0.1, 10, 8)  # Europa sphere
+    glPopMatrix()  # End Europa transformation
+
+    glPopMatrix()  # End Jupiter transformation around the Sun
 
 
 done = False
