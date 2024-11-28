@@ -22,7 +22,7 @@ screen = pygame.display.set_mode((screen_width, screen_height), DOUBLEBUF | OPEN
 
 pygame.display.set_caption('OpenGL in Python: sin(x)/x Graph')
 
-# We need to make a main loop, so that it wont immediately close the window
+# We need to make a main_FromProf loop, so that it wont immediately close the window
 
 def init_ortho():
     glMatrixMode(GL_PROJECTION) # Set camera to Projection mode

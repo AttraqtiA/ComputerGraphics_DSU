@@ -14,7 +14,7 @@ screen = pygame.display.set_mode((screen_width, screen_height), DOUBLEBUF | OPEN
 
 pygame.display.set_caption('OpenGL in Python :3')
 
-# We need to make a main loop, so that it won't immediately close the window
+# We need to make a main_FromProf loop, so that it won't immediately close the window
 
 done = False
 
