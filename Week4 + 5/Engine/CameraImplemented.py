@@ -20,7 +20,7 @@ drawing_color = (1, 1, 1, 1)
 screen = pygame.display.set_mode((screen_width, screen_height), DOUBLEBUF | OPENGL)
 pygame.display.set_caption('(Teapot/Cube) Transformations in Python')
 cube = Cube(GL_LINE_LOOP)
-mesh = LoadMesh("cube.obj", GL_LINE_LOOP)
+mesh = LoadMesh("nyao.obj", GL_LINE_LOOP)
 camera = Camera()
 
 def Light():
