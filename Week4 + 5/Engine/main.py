@@ -21,7 +21,7 @@ pygame.display.set_caption('OpenGL in Python')
 # mesh = Mesh() # Declare object/class
 #cube = Cube(GL_LINE_LOOP) # GL_POLYGON for solid / filled cube
 # pyramid = Pyramid(GL_LINE_LOOP)
-loadMesh = LoadMesh("granny.obj", GL_LINE_LOOP)
+loadMesh = LoadMesh("nyao.obj", GL_LINE_LOOP)
 
 def initialise():
     glClearColor(background_color[0], background_color[1], background_color[2], background_color[3])

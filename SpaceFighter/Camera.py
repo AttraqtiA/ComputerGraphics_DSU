@@ -48,13 +48,13 @@ class Camera:
 
         # Arrow keys
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_s]:
             self.eye -= self.forward * self.key_sensitivity
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_w]:
             self.eye += self.forward * self.key_sensitivity
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_d]:
             self.eye += self.right * self.key_sensitivity
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_a]:
             self.eye -= self.right * self.key_sensitivity
 
         # Update camera position AFTER the eye has moved
@@ -62,3 +62,6 @@ class Camera:
         gluLookAt(self.eye.x, self.eye.y, self.eye.z,
                   self.look.x, self.look.y, self.look.z,
                   self.up.x, self.up.y, self.up.z)
+
+
+
