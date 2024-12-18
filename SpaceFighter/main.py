@@ -1,6 +1,8 @@
 import pygame.key
 from pygame.locals import *
 from OpenGL.GLU import *
+from OpenGL.GL import *
+from OpenGL.GLUT import * # applying texture
 from LoadMesh import *
 from Camera import *
 import time
@@ -8,18 +10,61 @@ start_time = time.time()
 
 pygame.init()
 
-# COPIED FROM TransformExplorer.py
-
-# project settings
-screen_width = 1000
-screen_height = 800
+# Project settings & variables
+screen_width = 1440
+screen_height = 720
 background_color = (0, 0, 0, 1)
 drawing_color = (1, 1, 1, 1)
 
 screen = pygame.display.set_mode((screen_width, screen_height), DOUBLEBUF | OPENGL)
-pygame.display.set_caption('(Teapot/Cube) Transformations in Python')
-mesh = LoadMesh("cube.obj")
+pygame.display.set_caption('Space Fighter Game')
+gunMesh = LoadMesh("laser_gun.obj", GL_TRIANGLES)
+crosshair_texture = load_texture("crosshair.png")
+
 camera = Camera()
+
+# Track bullets (cylinders)
+bullets = []
+
+class Bullet:
+    def __init__(self, position, direction, speed=0.2):
+        self.position = list(position)  # Start position (x, y, z)
+        self.direction = direction  # Normalized direction (dx, dy, dz)
+        self.speed = speed  # Speed of the bullet
+
+    def update(self):
+        # Move the bullet forward in the direction
+        self.position[0] += self.direction[0] * self.speed
+        self.position[1] += self.direction[1] * self.speed
+        self.position[2] += self.direction[2] * self.speed
+
+    def draw(self):
+        # Draw the bullet as a small cylinder using gluCylinder
+        quadric = gluNewQuadric()
+        glPushMatrix()
+        glTranslatef(*self.position)  # Move to the bullet's position
+        glColor3f(1.0, 0.0, 0.0)  # Red bullet
+        glRotatef(-90, 1, 0, 0)  # Align cylinder along Z-axis
+        gluCylinder(quadric, 0.05, 0.05, 0.5, 16, 16)  # Base radius, top radius, height, slices, stacks
+        glPopMatrix()
+        gluDeleteQuadric(quadric)  # Clean up the quadric object
+
+
+def load_texture(file_path):
+    texture_surface = pygame.image.load(file_path).convert_alpha()  # Preserve transparency
+    texture_data = pygame.image.tostring(texture_surface, "RGBA", True)
+    width, height = texture_surface.get_size()
+
+    glEnable(GL_TEXTURE_2D)
+    texture_id = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, texture_id)
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
+    return texture_id
+
 
 def Light():
     ambientLight = [0.25, 0.25, 0.0, 1.0]
@@ -47,8 +92,53 @@ def Light():
     glMaterialfv(GL_FRONT, GL_SPECULAR, specref)
     glMateriali(GL_FRONT, GL_SHININESS, 10)
     glDepthFunc(GL_LEQUAL)
-    #
+
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
+
+
+def render_crosshair(texture_id):
+    glEnable(GL_BLEND)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)  # Handle transparency
+
+    glMatrixMode(GL_PROJECTION)
+    glPushMatrix()
+    glLoadIdentity()
+    glOrtho(0, screen_width, 0, screen_height, -1, 1)
+
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+
+    glEnable(GL_TEXTURE_2D)
+    glBindTexture(GL_TEXTURE_2D, texture_id)
+
+    # Position and size
+    x = screen_width // 2
+    y = screen_height // 2
+    crosshair_size = 16
+
+    glBegin(GL_QUADS)
+    glTexCoord2f(0, 0); glVertex2f(x - crosshair_size, y - crosshair_size)  # Bottom-left
+    glTexCoord2f(1, 0); glVertex2f(x + crosshair_size, y - crosshair_size)  # Bottom-right
+    glTexCoord2f(1, 1); glVertex2f(x + crosshair_size, y + crosshair_size)  # Top-right
+    glTexCoord2f(0, 1); glVertex2f(x - crosshair_size, y + crosshair_size)  # Top-left
+    glEnd()
+
+    glDisable(GL_TEXTURE_2D)
+    glPopMatrix()
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
+
+    glDisable(GL_BLEND)  # Disable blending after drawing
+
+
+def shoot_bullet():
+    # Gun position and direction
+    gun_position = [0, 0, -3]  # Adjust based on gun's position
+    bullet_direction = [0, 0, -1]  # Forward direction in view space
+    bullets.append(Bullet(gun_position, bullet_direction))
+
 
 def initialise():
     glClearColor(background_color[0], background_color[1], background_color[2], background_color[3])
@@ -70,139 +160,28 @@ def camera_init():
     glEnable(GL_DEPTH_TEST)
     camera.update(screen.get_width(), screen.get_height()) # For the mouse to stay in the center
 
-def draw_world_axes():
-    glLineWidth(4)
-    glBegin(GL_LINES)
-    glColor(1, 0, 0) # Red
-    glVertex3d(-1000, 0, 0)
-    glVertex3d(1000, 0, 0)
-    glColor(0, 1, 0) # Blue
-    glVertex3d(0, -1000, 0)
-    glVertex3d(0, 1000, 0)
-    glColor(0, 0, 1) # Green
-    glVertex3d(0, 0, -1000)
-    glVertex3d(0, 0, 1000)
-    glEnd()
-
-    # x positive sphere
-    sphere = gluNewQuadric()
-    glColor(1, 0, 0)
-    glPushMatrix()
-    glTranslated(1, 0, 0)
-    gluSphere(sphere, 0.05, 10, 10)
-    glPopMatrix()
-
-    # y positive sphere
-    sphere = gluNewQuadric()
-    glColor(0, 0, 1)
-    glPushMatrix()
-    glTranslated(0, 1, 0)
-    gluSphere(sphere, 0.05, 10, 10)
-    glPopMatrix()
-
-    # z positive sphere
-    sphere = gluNewQuadric()
-    glColor(0, 1, 0)
-    glPushMatrix()
-    glTranslated(0, 0, 1)
-    gluSphere(sphere, 0.05, 10, 10)
-    glPopMatrix()
-
-    glLineWidth(1)
-    glColor(1, 1, 1)
-
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     camera_init()
-    draw_world_axes()
 
-    t = time.time() - start_time
-    year_period = 10.0  # 5 seconds for simulating 1 year
-    year = (t / year_period)
-
-    # # Push dan Pop itu biar translationnya gak bocor ke cube lain, atau bisa juga diundo translationnya, cek pdf
+    # # Gun on the FPS POV position
     # glPushMatrix()
-    # glTranslated(1, 0, 0)
-    # mesh.draw()
+    #
+    # glScalef(1, 1, 1)
+    # # Bottom-right corner of the screen
+    # glTranslatef(0.6, -0.3, -4)
+    # glRotatef(-90, 0, 1, 0)
+    # # render_gun_with_texture(gunMesh, load_texture("laser_gun_diffuse.png"))  # Use the texture
+    # gunMesh.draw()
+    #
     # glPopMatrix()
 
-    # glPushMatrix()
-    # glColor4f(0, 0, 1, 1)
-    # glRotatef(year * 360.0, 0.0, 1.0, 0.0)
-    # glTranslatef(3.0, 0.0, 0.0)
-    # mesh.draw()
-    # glPopMatrix()
+    # Render bullets
+    for bullet in bullets:
+        bullet.draw()
 
-    day = 360 * year
-    moon_sid = (365 / 27.3) * year
-    # glPushMatrix()
-    # glRotatef(day * 360.0, 0.0, 1.0, 0.0)
-    # mesh.draw()
-    # glPopMatrix()
-
-
-    # SUN system
-    glColor4f(1.0, 1.0, 0.0, 1) # color of Yellow
-    sphere_sun = gluNewQuadric()
-    gluSphere(sphere_sun, 0.8, 20, 15) # Sun sphere
-
-    # EARTH system, rotation around the sun
-    glPushMatrix()
-    glColor4f(0.0, 0.0, 1.0, 1)
-    glRotatef(year * 360.0, 0.0, 1.0, 0.0)
-    glTranslated(3, 0, 0)
-    sphere_earth = gluNewQuadric()
-    gluSphere(sphere_earth, 0.3, 10, 8)
-
-    # MOON system
-    glPushMatrix()
-    glRotatef(moon_sid * 360.0, 0.0, 1.0, 0.0)
-    glTranslatef(1, 0, 0)
-    # glRotatef(90, 1.0, 0, 0)
-    glColor4f(0.4, 0.5, 0.6, 1)
-    sphere_moon = gluNewQuadric()
-    gluSphere(sphere_moon, 0.1, 10, 8)
-
-    glPopMatrix()
-    glPopMatrix() # close both
-
-    # MARS system, rotation around the sun
-    glPushMatrix()
-    glColor4f(1.0, 0.5, 0.0, 1)
-    glRotatef(year * 360.0 / 1.88, 0.0, 1.0, 0.0)
-    glTranslated(4.5, 0, 0)
-    sphere_mars = gluNewQuadric()
-    gluSphere(sphere_mars, 0.2, 10, 8)
-    glPopMatrix()
-
-    # JUPITER system, rotating around the Sun
-    glPushMatrix()
-    glColor4f(1.0, 0.5, 0.0, 1)  # Orange color for Jupiter
-    glRotatef(year * 360.0 / 11.86, 0.0, 1.0, 0.0)  # Jupiter's orbit around the Sun (slower than Mars)
-    glTranslatef(6.5, 0, 0)  # Set distance of Jupiter from the Sun
-
-    sphere_jupiter = gluNewQuadric()
-    gluSphere(sphere_jupiter, 0.5, 15, 12)  # Jupiter sphere
-
-    # Io Moon system, rotating around Jupiter
-    glPushMatrix()  # Start Io transformation around Jupiter
-    glColor4f(1.0, 0.8, 0.0, 1)  # Yellow-orange color for Io
-    glRotatef(year * 360.0 * 12, 0.0, 1.0, 0.0)  # Io's fast orbit around Jupiter
-    glTranslatef(0.8, 0, 0)  # Distance of Io from Jupiter
-    sphere_io = gluNewQuadric()
-    gluSphere(sphere_io, 0.1, 10, 8)  # Io sphere
-    glPopMatrix()  # End Io transformation
-
-    # Europa Moon system, rotating around Jupiter
-    glPushMatrix()  # Start Europa transformation around Jupiter
-    glColor4f(0.8, 0.8, 1.0, 1)  # Pale blue color for Europa
-    glRotatef(year * 360.0 * 4, 0.0, 1.0, 0.0)  # Europa's slower orbit around Jupiter
-    glTranslatef(1.5, 0, 0)  # Distance of Europa from Jupiter
-    sphere_europa = gluNewQuadric()
-    gluSphere(sphere_europa, 0.1, 10, 8)  # Europa sphere
-    glPopMatrix()  # End Europa transformation
-
-    glPopMatrix()  # End Jupiter transformation around the Sun
+    # Render crosshair
+    # render_crosshair(crosshair_texture)
 
 
 done = False
@@ -223,8 +202,19 @@ while not done:
             if event.key == K_SPACE:
                 pygame.mouse.set_visible(False)
                 pygame.event.set_grab(True)
+        if event.type == MOUSEBUTTONDOWN:
+            if event.button == 1:  # Left mouse button
+                shoot_bullet()
+
+    # Update bullets
+    for bullet in bullets:
+        bullet.update()
+
+    # Remove bullets that go out of view
+    bullets = [bullet for bullet in bullets if bullet.position[2] > -50]
 
     display()
     pygame.display.flip()
-    pygame.time.wait(100)
+    pygame.time.wait(10)
+
 pygame.quit()

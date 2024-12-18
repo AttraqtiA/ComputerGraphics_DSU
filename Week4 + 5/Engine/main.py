@@ -21,7 +21,7 @@ pygame.display.set_caption('OpenGL in Python')
 # mesh = Mesh() # Declare object/class
 #cube = Cube(GL_LINE_LOOP) # GL_POLYGON for solid / filled cube
 # pyramid = Pyramid(GL_LINE_LOOP)
-loadMesh = LoadMesh("nyao.obj", GL_LINE_LOOP)
+loadMesh = LoadMesh("donut.obj", GL_LINE_LOOP)
 
 def initialise():
     glClearColor(background_color[0], background_color[1], background_color[2], background_color[3])
@@ -38,7 +38,7 @@ def initialise():
     glLoadIdentity()
     glViewport(0, 0, screen.get_width(), screen.get_height())
     glEnable(GL_DEPTH_TEST)
-    glTranslate(0, -100, -200)
+    glTranslate(0, -1, -5)
 
 
 def display():

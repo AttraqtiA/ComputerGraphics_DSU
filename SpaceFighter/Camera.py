@@ -4,10 +4,10 @@ from math import *
 
 class Camera:
     def __init__(self):
-        self.eye = pygame.math.Vector3(0, 0, 3)
-        self.up = pygame.math.Vector3(0, 1, 0)
-        self.right = pygame.math.Vector3(1, 0, 0) # direction to camera's right
-        self.forward = pygame.math.Vector3(0, 0, 1) # camera's looking direction
+        self.eye = pygame.math.Vector3(0, 0, 0)
+        self.up = pygame.math.Vector3(0, 0, 0)
+        self.right = pygame.math.Vector3(0, 0, 0) # direction to camera's right
+        self.forward = pygame.math.Vector3(0, 0, 0) # camera's looking direction
         self.look = self.eye + self.forward
         self.yaw = -90
         self.pitch = 0
@@ -63,5 +63,12 @@ class Camera:
                   self.look.x, self.look.y, self.look.z,
                   self.up.x, self.up.y, self.up.z)
 
-
-
+    def reset_orientation(self):
+        # Reset the camera's look direction to ensure consistent state.
+        self.forward.x = cos(radians(self.yaw)) * cos(radians(self.pitch))
+        self.forward.y = sin(radians(self.pitch))
+        self.forward.z = sin(radians(self.yaw)) * cos(radians(self.pitch))
+        self.forward = self.forward.normalize()
+        self.right = self.forward.cross(pygame.Vector3(0, 1, 0)).normalize()
+        self.up = self.right.cross(self.forward).normalize()
+        self.look = self.eye + self.forward
